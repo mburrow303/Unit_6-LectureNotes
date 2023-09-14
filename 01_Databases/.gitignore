@@ -1,0 +1,6 @@
+# We want to tell git that it does not need to track our node modules.
+# this is because we can always simply re-download them
+/node_modules
+
+// ignore all files with the extension '.env'
+*.env
