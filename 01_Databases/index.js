@@ -25,10 +25,10 @@ db.once('open', () => console.log(`Connected to: ${MONGO}`));
 app.use(express.json());
 
 const users = require('./controllers/user.controller');
-app.use('/user', users);
+const pizzas = require('./controllers/pizza.controller');
 
-const orders = require('./controllers/pizza.controller');
-//app.use('/order', orders);
+app.use('/user', users);
+app.use('/pizza', pizzas);
 
 app.get('/test', (req, res) => {
   res.status(200).json({message: "Server is accessible", port: process.env.PORT});

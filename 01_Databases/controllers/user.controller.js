@@ -17,19 +17,22 @@ const router = require('express').Router();
 const User = require('../models/user.model');
 //? npm install bcrypt
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+//const {JWT} = process.env; //? Just destructuring the JWT from the env, since it is the only value we need in this file 
 
 const encryptPassword = (password) => {
  const encrypt = bcrypt.hashSync(password, 10);
  console.log('ENCRYPT:', encrypt);
 }
 
-//? add endpoints
+//? User Signup = Register a new account
 router.post('/signup', async (req, res) => {
+  console.log(process.env.JWT);
   // res.send('Connected');
   // res.json(req.body);
-  encryptPassword('myPassword');
-  encryptPassword('myPassword');
-  encryptPassword('new_Password');
+  //encryptPassword('myPassword');
+  //encryptPassword('myPassword');
+  //encryptPassword('new_Password');
   try {
   //* We can use a try/catch statement in a asynchronous function. As long as the code works normally without errors, we will always work in the "try" section. HOWEVER, once we get an error we will move to the "catch" section which will have access to the error
 
@@ -45,10 +48,20 @@ router.post('/signup', async (req, res) => {
   // Add the new user to the database
   const newUser = await user.save(); //* user.save() will write our new user to the database AND asynchronously give us back that entry FROM the database.
 
+  // run our code to create a new json web token
+  const token = jwt.sign({id: newUser['_id']},process.env.JWT,{expiresIn: "1 day"});
+  // sign method is going to take in 3 arguments
+  //  1 - payload: the content held within the token
+  //        - we will be giving this an object, though it can be a string
+  //  2 - encrypt/decrypt message: the message used to actually encrypt the payload
+  //       this is going to be a string 
+  //  3 - options: typically going to use the expiration option, meaning it will stop working after a set amount of time. Options takes an object.
+
   // Send response to client
   res.status(200).json({
     user: newUser,
-    message: 'Success! User Created!'
+    message: 'Success! User Created!',
+    token
   })
   } catch (err) {
    res.status(500).json({
@@ -57,6 +70,7 @@ router.post('/signup', async (req, res) => {
   }
 })
 
+//? User Login - Gain credentials for an existing account
 // login - written as an anonymous function rather than an arrow function
 router.post('/login', async function(req, res) {
 try {
@@ -74,6 +88,7 @@ try {
  if (!user) throw new Error('Email or Password does not match'); 
 
  // 3 - create a json web token 
+ const token = jwt.sign({id:user._id},process.env.JWT,{expiresIn: '1 day'});
 
  // 4 - check if the passwords are the same
  const passwordMatch = await bcrypt.compare(password, user.password);
@@ -84,8 +99,9 @@ try {
 
 // 5 - send a response
 res.status(200).json({
+  user,
   message: 'Successful Login!',
-  user
+  token
 });
 } catch (err) {
   res.status(500).json({

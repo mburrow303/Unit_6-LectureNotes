@@ -10,19 +10,16 @@
                 `localhost:4000/pizza/order`
 */
 
-const mongoose = require('mongoose')
+const mongoose = require('mongoose');
 
 const PizzaSchema = new mongoose.Schema({
-  toppings: {
-    type: String,
-    required: true
-  },
+  toppings: String,
   crust: {
     type: String,
-    required: true
+    required: false // NOTE: required is false by default
   },  
-  slices: {
-  type: Number,
-  required: true
-  } 
+  slices: Number
+  
 });
+
+module.exports = mongoose.model('Pizza', PizzaSchema);
