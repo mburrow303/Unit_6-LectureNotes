@@ -1,5 +1,6 @@
 const router = require('express').Router();
 const Pizza = require('../models/pizza.model');
+const User = require('../models/user.model');
 
 function errorResponse(res, err) {
   res.status(500).json({
@@ -17,7 +18,9 @@ router.post('/order', async (req, res) => {
     calories: req.body.calories, //* still no calories even from postman, this is because our pizza model does not track calories
     toppings: req.body.toppings,
     crust: req.body.crust,
-    slices: req.body.slices
+    slices: req.body.slices,
+    // TODO tell my database who owns this pizza
+    owner: req.user._id
   };
 
   //? 2. Creating a new Pizza document using the information from my request body
@@ -57,8 +60,9 @@ router.get('/order/:id', async(req, res) => {
   
   try {
    const singlePizza = await Pizza.findOne({_id:req.params.id});
+   const user = await User.findById(singlePizza.owner);
   
-   res.status(200).json({found: singlePizza});
+   res.status(200).json({found: singlePizza, owner: user});
   } catch (err) { 
    errorResponse(res,err);
   }
@@ -67,6 +71,7 @@ router.get('/order/:id', async(req, res) => {
 // TODO GET All
 router.get('/list', async(req, res) => {
   try {
+ console.log('user:', req.user.id); // hopefully this contains my user object   
  const getAllPizzas = await Pizza.find(); // this should give me everything in the collection
   //console.log([] == true);
   // Make a ternary to handle whether or not we get pizzas

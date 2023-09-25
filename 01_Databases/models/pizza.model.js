@@ -18,8 +18,11 @@ const PizzaSchema = new mongoose.Schema({
     type: String,
     required: false // NOTE: required is false by default
   },  
-  slices: Number
-  
+  slices: Number,
+  owner: {
+    type: String,
+    required: true
+  }
 });
 
 module.exports = mongoose.model('Pizza', PizzaSchema);
