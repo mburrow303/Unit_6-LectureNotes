@@ -86,9 +86,93 @@ router.get('/list', async(req, res) => {
 
 // TODO GET All with a Specific Crust
 
-// TODO PUT  One (Update One)
+// TODO PATCH One (Update One)
+//* PUT endpoint will modify the entire "document" in the database, while a PATCH will only modify fields within a document
+
+/*
+PUT
+let current = { id: 2, value: "something"}
+let updated = { id: 2, value: "something-else"}
+
+current = updated;
+
+PATCH
+let current = { id: 2, value: "something"}
+let updated = { value: "something-else"}
+
+* database will find the matching keys
+current.value = updated.value
+*/
+
+//? /:id - is creating a parameter for our request
+router.patch('/:id', async(req, res) => {
+ try {
+
+  let _id = req.params.id;
+  let owner = req.user.id;
+
+  console.log(_id);
+  console.log(owner);
+
+  let updatedInfo = req.body;
+
+  //? now that I can find the id and owner values, I want to find and update my pizza
+  const updated = await Pizza.findOneAndUpdate({_id, owner}, updatedInfo, {new: true});
+
+  if (!updated)
+   throw new Error("Invalid Pizza/User Combination");
+
+  res.status(200).json({
+    message: `${updated._id} Updated`,
+    updated
+  });
+
+  // res.send('Patch Endpoint'); //? this is temporary so we can console log our info  
+
+  //* first version of try/catch 129-146 from notes commented out and redone on second lesson
+  /// grab the value of id
+  /// create a filter object
+  //* const filter = {
+  //   _id: req.params.id,
+  //   owner: req.user.id,
+  // };
+  // const info = req.body;
+  // const returnOptions = { new: true }
+  // const updatedPizza = await Pizza.findOneAndUpdate(
+  //   filter,
+  //   info,
+  //   returnOptions
+  // )
+  // res.status(200).json({
+  //   message: 'Pizza Updated',
+  //   updatedPizza
+  //* })
+
+ } catch (err) {
+  errorResponse(res, err); 
+ }
+});
+
 
 //  TODO DELETE One
+router.delete('/:id', async(req, res) => {
+  try {
+  const {id} = req.params
+  const deletePizza = await Pizza.deleteOne({_id: id})
+
+  deletePizza.deletedCount ?
+   res.status(200).json({
+    message: "Pizza Deleted"
+   }) :
+   res.status(404).json({
+    message: "Pizza not deleted"
+   })
+  } catch (error) {
+    res.status(500).json({
+      error: error.message,
+    })
+  }
+})
 
 
 module.exports = router;
