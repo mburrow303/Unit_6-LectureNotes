@@ -1,6 +1,7 @@
 const router = require('express').Router();
 const Pizza = require('../models/pizza.model');
 const User = require('../models/user.model');
+const validateSession = require('../middleware/validateSession');
 
 function errorResponse(res, err) {
   res.status(500).json({
@@ -9,7 +10,8 @@ function errorResponse(res, err) {
 };
 
 //! Pizza Order - Add a new pizza to my Mongo Database
-router.post('/order', async (req, res) => {
+// to use middleware on a specific route, we must tell our code to run the middleware BEFORE we run our route's function
+router.post('/order', validateSession, async (req, res) => {
   // res.send('Order Post Works!');
   try {
   //? 1. Check our model for what we need to order a pizza
@@ -71,7 +73,7 @@ router.get('/order/:id', async(req, res) => {
 // TODO GET All
 router.get('/list', async(req, res) => {
   try {
- console.log('user:', req.user.id); // hopefully this contains my user object   
+ //console.log('user:', req.user.id); // hopefully this contains my user object   
  const getAllPizzas = await Pizza.find(); // this should give me everything in the collection
   //console.log([] == true);
   // Make a ternary to handle whether or not we get pizzas
@@ -105,7 +107,7 @@ current.value = updated.value
 */
 
 //? /:id - is creating a parameter for our request
-router.patch('/:id', async(req, res) => {
+router.patch('/:id', validateSession, async(req, res) => {
  try {
 
   let _id = req.params.id;
@@ -155,6 +157,9 @@ router.patch('/:id', async(req, res) => {
 
 
 //  TODO DELETE One
+
+//* First example done with Conor in class
+/*
 router.delete('/:id', async(req, res) => {
   try {
   const {id} = req.params
@@ -171,6 +176,31 @@ router.delete('/:id', async(req, res) => {
     res.status(500).json({
       error: error.message,
     })
+  }
+})
+*/
+
+//* Second example done with Jerome
+router.delete('/:id', validateSession, async function (req, res) {
+  try {
+  // we need to know what we want to delete
+  //let id = req.params.id;
+  let {id} = req.params; //? put in an object so it can be destructured
+  let owner = req.user.id;
+  // locate and delete the item from our database
+  const deletedPizza = await Pizza.deleteOne({_id: id, owner});
+  // respond to our client
+  if (!deletedPizza.deletedCount) {
+   throw new Error('Pizza not found in database :(')
+  } 
+  
+
+  res.status(200).json({
+    message: 'Pizza Deleted!',
+    deletedPizza
+  });
+  } catch(err) {
+    errorResponse(res, err);
   }
 })
 

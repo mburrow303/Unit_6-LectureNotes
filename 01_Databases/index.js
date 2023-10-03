@@ -30,7 +30,8 @@ const validateSession = require('./middleware/validateSession');
 
 app.use('/user', users);
 // validate session middleware
-app.use(validateSession); // All endpoints and routes below this line will require the validateSession middleware to run successfully before the endpoint runs
+//* app.use(validateSession); - commented out so we can only validate individual endpoints and not all of them
+// All endpoints and routes below this line will require the validateSession middleware to run successfully before the endpoint runs
 app.use('/pizza', pizzas);
 
 app.get('/test', (req, res) => {
